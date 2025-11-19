@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Gradebook — Home</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main class="card">
+    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div>
+        <h1>Your Courses</h1>
+        <p class="lead">Quick overview of your classes</p>
+      </div>
+      <div style="display:flex;gap:0.6rem;align-items:center;">
+        <button id="createCourseBtn" class="btn small">+ Create Course</button>
+        <a href="/logout" class="btn ghost">Logout</a>
+      </div>
+    </header>
+
+    <div class="card-content">
+      <!-- Top summary with large donut and totals -->
+      <section class="top-summary">
+        <div id="topDonutHolder" class="donut-large" aria-hidden="true"></div>
+        <div>
+          <div style="font-weight:700; font-size:1.1rem;" id="cumulativeTitle">Cumulative Average</div>
+          <div class="muted" id="cumulativeSubtitle">Weighted average across your courses</div>
+        </div>
+      </section>
+
+      <section id="coursesContainer" class="courses-grid">
+        <!-- Courses will be listed here -->
+      </section>
+    </div>
+  </main>
+
+  <!-- Create course modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Create Course</h2>
+      <form id="courseForm" class="form">
+        <input id="courseCode" placeholder="Course code (e.g. MATH101)" required />
+        <input id="courseWeight" placeholder="Course weight (numeric)" type="number" step="0.01" />
+        <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:0.6rem;">
+          <button type="button" id="modalCancel" class="btn ghost">Cancel</button>
+          <button type="submit" class="btn">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit course modal -->
+  <div id="editCourseModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Edit Course</h2>
+      <form id="editCourseForm" class="form">
+        <input id="editCourseCode" placeholder="Course code" required />
+        <input id="editCourseWeight" placeholder="Course weight (numeric)" type="number" step="0.01" />
+        <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:0.6rem;">
+          <button type="button" id="editCourseCancel" class="btn ghost">Cancel</button>
+          <button type="submit" class="btn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirm delete modal -->
+  <div id="confirmModal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="confirmTitle">Confirm</h2>
+      <p id="confirmMessage">Are you sure?</p>
+      <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:0.6rem;">
+        <button id="confirmCancel" class="btn ghost">Cancel</button>
+        <button id="confirmOk" class="btn">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/home.js"></script>
+</body>
+</html>

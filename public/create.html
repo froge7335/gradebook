@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gradebook — Create account</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <main class="auth-card" aria-labelledby="createTitle">
+    <div class="auth-content" role="region" aria-label="Create account">
+      <h2 id="createTitle">Create a Gradebook Account</h2>
+      <p class="lead">Create an account to start tracking your marks</p>
+
+      <form id="createForm" class="form" autocomplete="on">
+        <input id="newUsername" name="username" placeholder="Choose a username" required />
+        <input id="newPassword" name="password" type="password" placeholder="Choose a password" required />
+        <div style="display:flex;gap:.6rem;justify-content:space-between;align-items:center;">
+          <button type="submit" class="btn">Create account</button>
+          <a href="/" class="auth-link" id="toLogin">Sign in</a>
+        </div>
+        <div id="message" class="message" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+  </main>
+
+  <script src="/js/create.js"></script>
+</body>
+</html>
