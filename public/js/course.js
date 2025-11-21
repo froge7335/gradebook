@@ -148,7 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Render assignments
   function renderAssignments(assigns) {
     assignmentsList.innerHTML = '';
-    if (!assigns.length) { assignmentsList.innerHTML = '<p class="muted">No assignments yet — add one above.</p>'; return; }
+    if (!assigns.length) { 
+      assignmentsList.innerHTML = '<p class="muted">No assignments yet — add one above.</p>'; 
+      return; 
+    }
 
     assigns.forEach(a => {
       const row = document.createElement('div');
@@ -192,7 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentlyDeletingAssignmentId = e.currentTarget.dataset.id;
         openConfirm('Delete assignment', `Delete "${a.title}"?`, async () => {
           try {
-            const res = await fetch(`/api/courses/${encodeURIComponent(courseId)}/assignments/${encodeURIComponent(currentlyDeletingAssignmentId)}`, { method: 'DELETE' });
+            const res = await fetch(`/api/courses/${encodeURIComponent(courseId)}/assignments/${encodeURIComponent(currentlyDeletingAssignmentId)}`, { 
+              method: 'DELETE' 
+            });
             if (!res.ok) throw new Error('Delete failed');
             currentlyDeletingAssignmentId = null;
             loadCourse();

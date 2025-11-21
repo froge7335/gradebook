@@ -27,8 +27,13 @@ let currentDeleteCourseId = null;
 let dragSrcEl = null;
 let draggingId = null;
 
-createBtn.addEventListener('click', () => { modal.classList.remove('hidden'); });
-modalCancel.addEventListener('click', () => { modal.classList.add('hidden'); });
+createBtn.addEventListener('click', () => { 
+  modal.classList.remove('hidden'); 
+});
+
+modalCancel.addEventListener('click', () => { 
+  modal.classList.add('hidden'); 
+});
 
 editCourseCancel.addEventListener('click', () => {
   editCourseModal.classList.add('hidden');
@@ -333,14 +338,17 @@ function renderCourses(courses) {
 
     const actions = document.createElement('div');
     actions.className = 'course-actions-vertical';
+
     const editBtn = document.createElement('button');
     editBtn.className = 'small-ghost edit';
     editBtn.textContent = 'Edit';
     editBtn.dataset.id = c.id;
+
     const delBtn = document.createElement('button');
     delBtn.className = 'small-ghost delete';
     delBtn.textContent = 'Delete';
     delBtn.dataset.id = c.id;
+
     actions.appendChild(editBtn);
     actions.appendChild(delBtn);
 
@@ -405,7 +413,12 @@ courseForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const code = document.getElementById('courseCode').value.trim();
   const weight = parseFloat(document.getElementById('courseWeight').value) || 0;
-  if (!code) { alert('Course code required'); return; }
+
+  if (!code) { 
+    alert('Course code required'); 
+    return; 
+  }
+
   try {
     const res = await fetch('/api/courses', {
       method: 'POST',
@@ -432,7 +445,12 @@ editCourseForm.addEventListener('submit', async (e) => {
   if (!currentEditCourseId) return;
   const newCode = editCourseCode.value.trim();
   const newWeight = parseFloat(editCourseWeight.value) || 0;
-  if (!newCode) { alert('Course code required'); return; }
+  
+  if (!newCode) { 
+    alert('Course code required'); 
+    return; 
+  }
+
   try {
     const res = await fetch(`/api/courses/${currentEditCourseId}`, {
       method: 'PUT',

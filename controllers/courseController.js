@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { validationResult } = require('express-validator');
 
 function computeCourseMark(assignments) {
   const totalWeight = assignments.reduce((s, a) => s + parseFloat(a.weight || 0), 0);
@@ -10,11 +9,12 @@ function computeCourseMark(assignments) {
 
 exports.getCourses = async (req, res, next) => {
   try {
-    const userId = req.session.user.id;
+    const userId = req.session?.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
 
     // Get user's courses
     const [courses] = await pool.execute(
-      'SELECT id, code, weight FROM courses WHERE user_id = ? ORDER BY sort_order DESC, id ASC',
+      'SELECT id, code, weight FROM courses WHERE user_id = ? ORDER BY sort_order DESC, id DESC',
       [userId]
     );
 
@@ -37,7 +37,8 @@ exports.getCourses = async (req, res, next) => {
 exports.getCourseById = async (req, res, next) => {
   try {
     const courseId = req.params.id;
-    const userId = req.session.user.id;
+    const userId = req.session?.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
 
     // Verify the course belongs to this user and fetch metadata
     const [courses] = await pool.execute(
@@ -50,7 +51,7 @@ exports.getCourseById = async (req, res, next) => {
 
     // Fetch assignments for that course
     const [assignments] = await pool.execute(
-      'SELECT id, title, mark, weight FROM assignments WHERE course_id = ? ORDER BY sort_order DESC',
+      'SELECT id, title, mark, weight FROM assignments WHERE course_id = ? ORDER BY sort_order DESC, id DESC',
       [courseId]
     );
 
@@ -71,24 +72,21 @@ exports.getCourseById = async (req, res, next) => {
 
 exports.createCourse = async (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const {code, weight = 0} = req.body;
+    const userId = req.session?.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
 
-    const { code, weight = 0 } = req.body;
-    const userId = req.session.user.id;
+    if (!code || !String(code).trim()) return res.status(400).json({ errors: [{ msg: 'Course code required', path: 'code' }] });
 
-    // New course gets added to the end
-    const [maxRows] = await pool.execute(
-      'SELECT COALESCE(MAX(sort_order), 0) AS maxo FROM courses WHERE user_id = ?', 
-      [userId]
-    );
-    const next = (maxRows[0]?.maxo || 0) + 1;
+    const [maxRows] = await pool.execute('SELECT COALESCE(MAX(sort_order), 0) AS maxo FROM courses WHERE user_id = ?', [userId]);
+    const nextOrder = (maxRows[0]?.maxo || 0) + 1;
+
     const [result] = await pool.execute(
       'INSERT INTO courses (code, weight, user_id, sort_order) VALUES (?, ?, ?, ?)',
-      [code, weight, userId, next]
+      [code.trim(), weight, userId, nextOrder]
     );
 
-    res.status(201).json({ id: result.insertId, code, weight });
+    res.status(201).json({ id: result.insertId, code: code.trim(), weight });
   } catch (err) {
     next(err);
   }
@@ -96,15 +94,15 @@ exports.createCourse = async (req, res, next) => {
 
 exports.updateCourse = async (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
     const courseId = req.params.id;
     const { code, weight = 0 } = req.body;
-    const userId = req.session.user.id;
+    const userId = req.session?.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+
+    if (!code || !String(code).trim()) return res.status(400).json({ errors: [{ msg: 'Course code required', path: 'code' }] });
 
     // Only update if the course belongs to the user
-    const [result] = await pool.execute(
+    await pool.execute(
       'UPDATE courses SET code = ?, weight = ? WHERE id = ? AND user_id = ?',
       [code, weight, courseId, userId]
     );
@@ -118,10 +116,16 @@ exports.updateCourse = async (req, res, next) => {
 exports.deleteCourse = async (req, res, next) => {
   try {
     const courseId = req.params.id;
-    const userId = req.session.user.id;
+    const userId = req.session?.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
 
     await pool.execute(
-      'DELETE FROM courses WHERE id = ? AND user_id = ?',
+      'DELETE FROM assignments WHERE course_id = ?', 
+      [courseId]
+    );
+
+    await pool.execute(
+      'DELETE FROM courses WHERE id = ? AND user_id = ?', 
       [courseId, userId]
     );
 
@@ -142,13 +146,14 @@ exports.updateOrder = async (req, res, next) => {
     const conn = await pool.getConnection();
     try {
       await conn.beginTransaction();
+
       // Update each id with the index as sort_order (1-based)
       for (let i = 0; i < order.length; i++) {
         const courseId = order[i];
-        // Update only if course belongs to this user
+        const sortOrder = order.length - i;
         await conn.execute(
           'UPDATE courses SET sort_order = ? WHERE id = ? AND user_id = ?',
-          [i + 1, courseId, userId]
+          [sortOrder, courseId, userId]
         );
       }
       await conn.commit();
